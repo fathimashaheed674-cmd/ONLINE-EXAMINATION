@@ -59,10 +59,10 @@ export default function DashboardPage() {
                         📊 Full Analytics
                     </Link>
                     <button
-                        onClick={() => startExam('General Knowledge')}
+                        onClick={() => startExam('C Programming')}
                         className="bg-primary hover:bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium transition-all shadow-lg shadow-primary/20"
                     >
-                        {generating === 'General Knowledge' ? 'Starting...' : '+ Random Practice'}
+                        {generating === 'C Programming' ? 'Starting...' : '+ Random Practice'}
                     </button>
                 </div>
             </div>
@@ -113,31 +113,31 @@ export default function DashboardPage() {
                 <h2 className="text-xl font-bold">Recommended for You</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <ExamCard
-                        title="Advanced Mathematics"
-                        duration="45 mins"
-                        questions={5}
-                        difficulty="Hard"
-                        tags={['Math', 'Algebra']}
-                        onStart={() => startExam('Advanced Mathematics')}
-                        loading={generating === 'Advanced Mathematics'}
-                    />
-                    <ExamCard
-                        title="Physics: Mechanics"
-                        duration="60 mins"
-                        questions={5}
-                        difficulty="Medium"
-                        tags={['Physics', 'Science']}
-                        onStart={() => startExam('Physics Mechanics')}
-                        loading={generating === 'Physics Mechanics'}
-                    />
-                    <ExamCard
-                        title="Artificial Intelligence"
-                        duration="20 mins"
+                        title="C Basics & Syntax"
+                        duration="15 mins"
                         questions={5}
                         difficulty="Easy"
-                        tags={['AI', 'Tech']}
-                        onStart={() => startExam('Artificial Intelligence')}
-                        loading={generating === 'Artificial Intelligence'}
+                        tags={['C', 'Programming']}
+                        onStart={() => startExam('C Language Basics and Syntax')}
+                        loading={generating === 'C Language Basics and Syntax'}
+                    />
+                    <ExamCard
+                        title="Pointers & Memory"
+                        duration="30 mins"
+                        questions={5}
+                        difficulty="Hard"
+                        tags={['C', 'Memory']}
+                        onStart={() => startExam('C Pointers and Memory Management')}
+                        loading={generating === 'C Pointers and Memory Management'}
+                    />
+                    <ExamCard
+                        title="Data Structures in C"
+                        duration="45 mins"
+                        questions={5}
+                        difficulty="Medium"
+                        tags={['C', 'DSA']}
+                        onStart={() => startExam('Data Structures in C')}
+                        loading={generating === 'Data Structures in C'}
                     />
                 </div>
             </div>

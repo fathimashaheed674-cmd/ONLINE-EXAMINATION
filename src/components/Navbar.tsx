@@ -12,7 +12,7 @@ export default function Navbar() {
             <div className="app-container mx-auto pointer-events-auto">
                 <div className="glass-panel rounded-3xl px-6 py-4 flex items-center justify-between shadow-2xl">
                     <Link href="/" className="text-xl font-bold flex items-center gap-2 group">
-                        <span className="text-gradient font-black tracking-tighter text-2xl">AI NEXUS</span>
+                        <span className="text-gradient font-black tracking-tighter text-2xl uppercase">MOCK TEST</span>
                     </Link>
 
                     <div className="hidden md:flex items-center gap-10 text-sm font-semibold tracking-wide text-gray-400">
