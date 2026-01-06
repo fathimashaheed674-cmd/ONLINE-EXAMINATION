@@ -1,6 +1,6 @@
 'use client';
 
-import { Trophy, Medal, Award } from 'lucide-react';
+import { Trophy } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
