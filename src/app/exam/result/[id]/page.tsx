@@ -26,8 +26,8 @@ interface ExamResult {
     createdAt: any;
 }
 
-export default function ResultPage(props: any) {
-    const { id } = React.use(props.params) as { id: string };
+export default function ResultPage({ params: paramsPromise }: { params: Promise<{ id: string }> }) {
+    const { id } = React.use(paramsPromise);
     const { user } = useAuth();
     const router = useRouter();
     const [result, setResult] = useState<ExamResult | null>(null);
@@ -119,7 +119,7 @@ export default function ResultPage(props: any) {
                         </div>
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <div className="lg:col-span-2 text-gray-300 leading-relaxed italic border-l-2 border-primary/30 pl-4">
-                                "{result.aiFeedback || "Thinking..."}"
+                                {result.aiFeedback || "Thinking..."}
                             </div>
                             {result.weakAreas && result.weakAreas.length > 0 && (
                                 <div className="bg-white/5 p-4 rounded-xl border border-glass-border">

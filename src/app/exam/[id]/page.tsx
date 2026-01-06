@@ -1,8 +1,7 @@
 import ExamInterface from '@/components/exam/ExamInterface';
 
-export default async function ExamPage(props: any) {
-    const params = await props.params;
-    const { id } = params as { id: string };
+export default async function ExamPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
 
     return (
         <div className="min-h-screen pt-20">
