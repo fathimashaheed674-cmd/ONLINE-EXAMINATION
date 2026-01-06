@@ -1,10 +1,10 @@
 'use client';
 
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { CheckCircle, XCircle, ChevronLeft, BarChart2, MessageSquare, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 
@@ -26,8 +26,8 @@ interface ExamResult {
     createdAt: any;
 }
 
-export default function ResultPage() {
-    const { id } = useParams();
+export default function ResultPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = React.use(params);
     const { user } = useAuth();
     const router = useRouter();
     const [result, setResult] = useState<ExamResult | null>(null);
@@ -85,7 +85,6 @@ export default function ResultPage() {
 
                 <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
                     <div className="relative">
-                        {/* Progress circle... unchanged */}
                         <svg className="w-32 h-32 transform -rotate-90">
                             <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-white/5" />
                             <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray={364.4} strokeDashoffset={364.4 - (364.4 * scorePercentage) / 100} className={`${isPassed ? 'text-success' : 'text-red-500'} transition-all duration-1000 ease-out`} />
