@@ -72,7 +72,7 @@ export default function ResultPage(props: any) {
     const isPassed = scorePercentage >= 60;
 
     return (
-        <div className="container py-12 max-w-5xl">
+        <div className="app-container py-12">
             <Link href="/dashboard" className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-8 transition-colors">
                 <ChevronLeft size={20} /> Back to Dashboard
             </Link>

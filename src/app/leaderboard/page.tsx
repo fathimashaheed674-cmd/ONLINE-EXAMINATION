@@ -67,10 +67,10 @@ export default function LeaderboardPage() {
     }
 
     return (
-        <div className="container py-12">
-            <div className="text-center mb-16">
-                <h1 className="text-4xl font-bold mb-4">Global Leaderboard</h1>
-                <p className="text-gray-400">Competing against the best minds in the world.</p>
+        <div className="app-container py-12">
+            <div className="text-center mb-16 animate-fade-in">
+                <h1 className="text-4xl md:text-6xl font-black mb-4 tracking-tight">Global <span className="text-gradient">Leaderboard</span></h1>
+                <p className="text-gray-400 text-lg">Top performers mastering the future with AI.</p>
             </div>
 
             <div className="max-w-3xl mx-auto space-y-4">

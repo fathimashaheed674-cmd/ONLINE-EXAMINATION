@@ -114,7 +114,7 @@ export default function ExamInterface({ topic }: { topic: string }) {
     const secs = timeLeft % 60;
 
     return (
-        <div className="container max-w-6xl py-8">
+        <div className="app-container py-12">
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 {/* Main Exam Area */}
                 <div className="lg:col-span-3 space-y-8">
