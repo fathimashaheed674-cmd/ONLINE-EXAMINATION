@@ -1,4 +1,4 @@
 node_modules
 .next
 .env.local
-backend
+# backend should NOT be ignored so Render can see it
