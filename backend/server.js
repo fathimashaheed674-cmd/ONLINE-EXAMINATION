@@ -29,13 +29,26 @@ app.post('/api/generate', async (req, res) => {
     try {
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-        const prompt = `Generate ${count} multiple choice questions about "${topic}". 
-        Return ONLY a raw JSON array. Do not use Markdown notation.
-        Each object should have:
-        - text: string (the question)
-        - options: string[] (array of 4 options)
-        - correctAnswer: number (0-3 index of the correct option)
-        - explanation: string (brief explanation)
+        const prompt = `You are an expert C programming instructor. Generate ${count} multiple choice questions about "${topic}". 
+        
+        Requirements:
+        - Focus ONLY on C programming language concepts
+        - Include code snippets where appropriate
+        - Questions should test practical understanding, not just theory
+        - Cover topics like: syntax, pointers, memory management, data structures, functions, arrays, strings
+        - Make questions challenging but fair for intermediate level
+        
+        Return ONLY a raw JSON array (no markdown formatting, no code blocks).
+        Each object must have exactly these fields:
+        {
+          "text": "Clear question text (can include code)",
+          "options": ["Option A", "Option B", "Option C", "Option D"],
+          "correctAnswer": 0,  // index 0-3
+          "explanation": "Brief explanation of the correct answer"
+        }
+        
+        Example question format:
+        "What is the output of the following C code?\n\nint x = 5;\nprintf(\"%d\", ++x);"
         `;
 
         const result = await model.generateContent(prompt);
