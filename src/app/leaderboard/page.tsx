@@ -41,7 +41,6 @@ export default function LeaderboardPage() {
                     });
                 });
 
-                // If no data, use some fallback or empty state
                 setLeaderboardData(data);
             } catch (error) {
                 console.error("Error fetching leaderboard:", error);
@@ -75,7 +74,6 @@ export default function LeaderboardPage() {
             </div>
 
             <div className="max-w-3xl mx-auto space-y-4">
-                {/* Top 3 Podium (Visual) */}
                 {leaderboardData.length >= 3 && (
                     <div className="flex items-end justify-center gap-4 mb-12">
                         {/* Rank 2 */}
@@ -116,7 +114,6 @@ export default function LeaderboardPage() {
                     </div>
                 )}
 
-                {/* List Items */}
                 {leaderboardData.length === 0 ? (
                     <div className="text-center text-gray-500 py-12">
                         No scores yet. Be the first!

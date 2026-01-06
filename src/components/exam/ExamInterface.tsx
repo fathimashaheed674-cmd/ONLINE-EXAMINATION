@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ArrowRight, ArrowLeft, Flag, Clock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { generateQuestions, Question, analyzePerformance } from '@/lib/ai-service';
@@ -38,116 +38,64 @@ export default function ExamInterface({ topic }: { topic: string }) {
         }
     }, [topic]);
 
+    const handleSubmit = useCallback(async () => {
+        if (!user || submitting) return;
+
+        setSubmitting(true);
+        try {
+            const aiAnalysis = await analyzePerformance(answers, questions);
+
+            const docRef = await addDoc(collection(db, `users/${user.uid}/exams`), {
+                topic,
+                score: aiAnalysis.score,
+                totalQuestions: questions.length,
+                correctAnswers: Math.round((aiAnalysis.score / 100) * questions.length),
+                aiFeedback: aiAnalysis.feedback,
+                weakAreas: aiAnalysis.weakAreas,
+                questions: questions.map(q => ({
+                    ...q,
+                    selectedAnswer: answers[q.id] || null
+                })),
+                createdAt: serverTimestamp()
+            });
+
+            // Also update global leaderboard
+            await addDoc(collection(db, 'leaderboard'), {
+                userId: user.uid,
+                name: user.displayName || user.email?.split('@')[0] || 'Anonymous',
+                score: aiAnalysis.score,
+                topic,
+                createdAt: serverTimestamp(),
+                avatar: user.photoURL || user.email?.charAt(0).toUpperCase() || '?'
+            });
+
+            router.push(`/exam/result/${docRef.id}`);
+        } catch (error) {
+            console.error("Error submitting exam:", error);
+            alert("Failed to submit exam. Please try again.");
+            setSubmitting(false);
+        }
+    }, [user, submitting, answers, questions, topic, router]);
+
     useEffect(() => {
-        if (loading) return;
+        if (loading || submitting) return;
         const timer = setInterval(() => {
             setTimeLeft(prev => {
                 if (prev <= 1) {
-                    handleSubmit(); // Auto submit
+                    handleSubmit();
                     return 0;
                 }
                 return prev - 1;
             });
         }, 1000);
         return () => clearInterval(timer);
-    }, [loading]);
-
-    const formatTime = (seconds: number) => {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
-    };
-
-    const handleSelect = (optionIndex: number) => {
-        if (!questions[currentQIndex]) return;
-        setAnswers(prev => ({ ...prev, [questions[currentQIndex].id]: optionIndex }));
-    };
-
-    const toggleFlag = () => {
-        if (!questions[currentQIndex]) return;
-        const qId = questions[currentQIndex].id;
-        setFlagged(prev => {
-            const next = new Set(prev);
-            if (next.has(qId)) next.delete(qId);
-            else next.add(qId);
-            return next;
-        });
-    };
-
-    const handleSubmit = async () => {
-        if (submitting) return;
-        setSubmitting(true);
-
-        try {
-            // Calculate Score
-            let correctCount = 0;
-            questions.forEach(q => {
-                if (answers[q.id] === q.correctAnswer) {
-                    correctCount++;
-                }
-            });
-            const score = (correctCount / questions.length) * 100;
-
-            // Get AI Analysis
-            let aiAnalysis = { feedback: '', weakAreas: [] as string[] };
-            try {
-                aiAnalysis = await analyzePerformance(answers, questions);
-            } catch (err) {
-                console.error("AI Analysis failed:", err);
-            }
-
-            // Save to Firestore
-            let examId = '';
-            if (user) {
-                // Save attempt with detailed data
-                const docRef = await addDoc(collection(db, `users/${user.uid}/exams`), {
-                    topic,
-                    score,
-                    totalQuestions: questions.length,
-                    correctAnswers: correctCount,
-                    aiFeedback: aiAnalysis.feedback,
-                    weakAreas: aiAnalysis.weakAreas,
-                    questions: questions.map(q => ({
-                        id: q.id,
-                        text: q.text,
-                        options: q.options,
-                        correctAnswer: q.correctAnswer,
-                        explanation: q.explanation,
-                        selectedAnswer: answers[q.id] ?? null
-                    })),
-                    createdAt: serverTimestamp(),
-                });
-                examId = docRef.id;
-
-                // Update Leaderboard
-                await addDoc(collection(db, 'leaderboard'), {
-                    uid: user.uid,
-                    name: user.displayName || user.email?.split('@')[0] || 'Anonymous',
-                    score,
-                    topic,
-                    createdAt: serverTimestamp(),
-                    avatar: (user.displayName || 'A').charAt(0).toUpperCase()
-                });
-            }
-
-            // Redirect to results
-            if (examId) {
-                router.push(`/exam/result/${examId}`);
-            } else {
-                router.push('/dashboard?examSubmitted=true');
-            }
-        } catch (error) {
-            console.error("Error submitting exam:", error);
-            alert("Failed to submit exam. Please try again.");
-            setSubmitting(false);
-        }
-    };
+    }, [loading, submitting, handleSubmit]);
 
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center h-[60vh]">
                 <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary mb-4"></div>
-                <p className="text-xl text-gray-400 animate-pulse">Generating AI Questions for "{topic}"...</p>
+                <p className="text-xl text-gray-400 animate-pulse">Generating AI Questions for &quot;{topic}&quot;...</p>
             </div>
         );
     }
@@ -161,105 +109,148 @@ export default function ExamInterface({ topic }: { topic: string }) {
         );
     }
 
-    const currentQuestion = questions[currentQIndex];
+    const currentQ = questions[currentQIndex];
+    const mins = Math.floor(timeLeft / 60);
+    const secs = timeLeft % 60;
 
     return (
-        <div className="flex h-[calc(100vh-80px)]">
-            {/* Main Question Area */}
-            <div className="flex-1 p-8 overflow-y-auto">
-                <div className="max-w-3xl mx-auto">
+        <div className="container max-w-6xl py-8">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                {/* Main Exam Area */}
+                <div className="lg:col-span-3 space-y-8">
                     {/* Header */}
-                    <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-2xl font-bold">Question {currentQIndex + 1}</h2>
-                        <div className="flex items-center gap-4 text-gray-400">
-                            <button onClick={toggleFlag} className={`flex items-center gap-2 px-3 py-1 rounded-full border transition-colors ${flagged.has(currentQuestion.id) ? 'border-yellow-500 text-yellow-500 bg-yellow-500/10' : 'border-gray-700 hover:border-gray-500'}`}>
-                                <Flag size={16} /> Mark for Review
-                            </button>
+                    <div className="glass-panel p-6 rounded-2xl flex items-center justify-between">
+                        <div>
+                            <h2 className="text-sm font-bold text-primary uppercase tracking-widest mb-1">Current Topic</h2>
+                            <p className="text-xl font-bold">{decodeURIComponent(topic)}</p>
+                        </div>
+                        <div className={`flex items-center gap-3 px-6 py-3 rounded-xl border-2 ${timeLeft < 300 ? 'border-red-500/50 bg-red-500/10 text-red-500 animate-pulse' : 'border-glass-border bg-white/5'}`}>
+                            <Clock size={20} />
+                            <span className="text-2xl font-mono font-bold">
+                                {String(mins).padStart(2, '0')}:{String(secs).padStart(2, '0')}
+                            </span>
                         </div>
                     </div>
 
-                    <div className="glass-panel p-8 rounded-2xl mb-8 min-h-[200px] flex items-center">
-                        <p className="text-xl font-medium leading-relaxed">
-                            {currentQuestion.text}
-                        </p>
-                    </div>
-
-                    <div className="space-y-4">
-                        {currentQuestion.options.map((option, idx) => (
+                    {/* Question Card */}
+                    <div className="glass-panel p-10 rounded-3xl relative overflow-hidden">
+                        <div className="flex justify-between items-start mb-8">
+                            <span className="text-gray-500 font-mono font-bold text-lg">Question {currentQIndex + 1} / {questions.length}</span>
                             <button
-                                key={idx}
-                                onClick={() => handleSelect(idx)}
-                                className={`w-full text-left p-4 rounded-xl border transition-all ${answers[currentQuestion.id] === idx
-                                    ? 'border-primary bg-primary/20 text-white shadow-[0_0_15px_rgba(59,130,246,0.3)]'
-                                    : 'border-glass-border bg-glass-bg hover:bg-white/5 text-gray-300'
-                                    }`}
+                                onClick={() => {
+                                    const next = new Set(flagged);
+                                    if (next.has(currentQ.id)) next.delete(currentQ.id);
+                                    else next.add(currentQ.id);
+                                    setFlagged(next);
+                                }}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${flagged.has(currentQ.id) ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
                             >
-                                <span className="inline-block w-8 font-mono text-gray-500">{String.fromCharCode(65 + idx)}.</span>
-                                {option}
+                                <Flag size={18} fill={flagged.has(currentQ.id) ? "currentColor" : "none"} />
+                                {flagged.has(currentQ.id) ? 'Flagged' : 'Flag for later'}
                             </button>
-                        ))}
+                        </div>
+
+                        <h3 className="text-2xl font-semibold mb-10 leading-relaxed">
+                            {currentQ.text}
+                        </h3>
+
+                        <div className="grid grid-cols-1 gap-4">
+                            {currentQ.options.map((option, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => setAnswers({ ...answers, [currentQ.id]: idx })}
+                                    className={`group flex items-center p-5 rounded-2xl border-2 transition-all text-left ${answers[currentQ.id] === idx
+                                        ? 'border-primary bg-primary/10 shadow-[0_0_20px_rgba(59,130,246,0.2)]'
+                                        : 'border-glass-border bg-white/5 hover:border-white/20 hover:bg-white/10'}`}
+                                >
+                                    <span className={`w-10 h-10 rounded-full flex items-center justify-center font-mono font-bold mr-4 transition-colors ${answers[currentQ.id] === idx ? 'bg-primary text-white' : 'bg-white/5 text-gray-500 group-hover:bg-white/10'}`}>
+                                        {String.fromCharCode(65 + idx)}
+                                    </span>
+                                    <span className={`text-lg transition-colors ${answers[currentQ.id] === idx ? 'text-white' : 'text-gray-300'}`}>
+                                        {option}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
-                    <div className="flex justify-between mt-12">
+                    {/* Navigation */}
+                    <div className="flex items-center justify-between pt-4">
                         <button
                             onClick={() => setCurrentQIndex(prev => Math.max(0, prev - 1))}
                             disabled={currentQIndex === 0}
-                            className="glass-btn px-6 py-3 rounded-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex items-center gap-2 px-8 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-glass-border transition-all disabled:opacity-30"
                         >
-                            <ArrowLeft size={18} /> Previous
+                            <ArrowLeft size={20} /> Previous
                         </button>
 
-                        {currentQIndex < questions.length - 1 ? (
-                            <button
-                                onClick={() => setCurrentQIndex(prev => prev + 1)}
-                                className="bg-primary hover:bg-blue-600 text-white px-8 py-3 rounded-lg flex items-center gap-2 shadow-lg shadow-primary/25 transition-all"
-                            >
-                                Next <ArrowRight size={18} />
-                            </button>
-                        ) : (
+                        {currentQIndex === questions.length - 1 ? (
                             <button
                                 onClick={handleSubmit}
                                 disabled={submitting}
-                                className="bg-success hover:bg-emerald-600 text-white px-8 py-3 rounded-lg flex items-center gap-2 shadow-lg shadow-success/25 transition-all disabled:opacity-70"
+                                className="bg-success hover:bg-green-600 text-white px-10 py-3 rounded-xl font-bold transition-all shadow-lg shadow-success/20 disabled:opacity-50"
                             >
-                                {submitting ? 'Submitting...' : 'Submit Exam'}
+                                {submitting ? 'Submitting...' : 'Finish Exam'}
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => setCurrentQIndex(prev => Math.min(questions.length - 1, prev + 1))}
+                                className="flex items-center gap-2 px-8 py-3 rounded-xl bg-primary hover:bg-blue-600 font-bold transition-all shadow-lg shadow-primary/20"
+                            >
+                                Next <ArrowRight size={20} />
                             </button>
                         )}
                     </div>
                 </div>
-            </div>
 
-            {/* Sidebar / Navigator */}
-            <div className="w-80 border-l border-glass-border bg-glass-bg p-6 flex flex-col">
-                <div className="mb-8 p-4 rounded-xl bg-white/5 border border-glass-border flex items-center justify-between">
-                    <span className="text-gray-400 text-sm">Time Remaining</span>
-                    <div className="text-xl font-mono font-bold text-primary flex items-center gap-2">
-                        <Clock size={16} /> {formatTime(timeLeft)}
+                {/* Sidebar Navigation */}
+                <div className="lg:col-span-1">
+                    <div className="glass-panel p-6 rounded-2xl sticky top-24">
+                        <h3 className="text-sm font-semibold text-gray-400 mb-4 uppercase tracking-wider">Question Inspector</h3>
+                        <div className="grid grid-cols-5 gap-3">
+                            {questions.map((q, idx) => {
+                                const isAnswered = answers[q.id] !== undefined;
+                                const isCurrent = currentQIndex === idx;
+                                const isFlagged = flagged.has(q.id);
+
+                                return (
+                                    <button
+                                        key={idx}
+                                        onClick={() => setCurrentQIndex(idx)}
+                                        className={`w-full aspect-square rounded-lg flex items-center justify-center font-bold text-sm transition-all border-2 relative
+                                            ${isCurrent ? 'border-primary ring-2 ring-primary/20' : 'border-transparent'}
+                                            ${isAnswered ? 'bg-primary text-white' : 'bg-white/5 text-gray-400'}
+                                            ${isFlagged && !isAnswered ? 'bg-orange-500/20 text-orange-400' : ''}
+                                        `}
+                                    >
+                                        {idx + 1}
+                                        {isFlagged && (
+                                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full border-2 border-[#0a0a0a]"></div>
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        <div className="mt-8 pt-8 border-t border-glass-border space-y-4">
+                            <div className="flex items-center justify-between text-sm">
+                                <span className="text-gray-400">Answered</span>
+                                <span className="font-bold">{Object.keys(answers).length} / {questions.length}</span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                                <span className="text-gray-400">Flagged</span>
+                                <span className="font-bold text-orange-400">{flagged.size}</span>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={handleSubmit}
+                            disabled={submitting}
+                            className="w-full mt-8 py-4 rounded-xl border border-primary text-primary font-bold hover:bg-primary hover:text-white transition-all disabled:opacity-50"
+                        >
+                            Submit Application
+                        </button>
                     </div>
-                </div>
-
-                <h3 className="text-sm font-semibold text-gray-400 mb-4 uppercase tracking-wider">Question Inspector</h3>
-                <div className="grid grid-cols-5 gap-3">
-                    {questions.map((q, idx) => {
-                        const isAnswered = answers[q.id] !== undefined;
-                        const isCurrent = currentQIndex === idx;
-                        const isFlagged = flagged.has(q.id);
-
-                        return (
-                            <button
-                                key={q.id}
-                                onClick={() => setCurrentQIndex(idx)}
-                                className={`aspect-square rounded-lg flex items-center justify-center text-sm font-bold border transition-all ${isCurrent ? 'border-primary bg-primary text-white shadow-lg' :
-                                    isFlagged ? 'border-yellow-500 bg-yellow-500/20 text-yellow-500' :
-                                        isAnswered ? 'border-success/50 bg-success/20 text-success' :
-                                            'border-glass-border bg-white/5 text-gray-400 hover:bg-white/10'
-                                    }`}
-                            >
-                                {idx + 1}
-                                {isFlagged && <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-yellow-500 rounded-full" />}
-                            </button>
-                        );
-                    })}
                 </div>
             </div>
         </div>

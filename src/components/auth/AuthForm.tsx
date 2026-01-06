@@ -30,9 +30,10 @@ export default function AuthForm({ initialMode = 'login' }: { initialMode?: 'log
                 await createUserWithEmailAndPassword(auth, email, password);
             }
             router.push('/dashboard');
-        } catch (err: any) {
-            console.error(err);
-            setError(err.message || 'Authentication failed');
+        } catch (err: unknown) {
+            const errorInstance = err as Error;
+            console.error(errorInstance);
+            setError(errorInstance.message || 'Authentication failed');
         } finally {
             setLoading(false);
         }
@@ -40,7 +41,6 @@ export default function AuthForm({ initialMode = 'login' }: { initialMode?: 'log
 
     return (
         <div className="glass-panel p-8 rounded-2xl w-full max-w-md relative overflow-hidden">
-            {/* Dynamic Title */}
             <h2 className="text-3xl font-bold mb-6 text-center">
                 {mode === 'login' ? 'Welcome Back' : 'Create Account'}
             </h2>
@@ -106,7 +106,6 @@ export default function AuthForm({ initialMode = 'login' }: { initialMode?: 'log
                 </p>
             </div>
 
-            {/* Decorative */}
             <div className="absolute top-0 right-0 -mr-16 -mt-16 w-32 h-32 bg-primary/20 rounded-full blur-3xl -z-10"></div>
             <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-32 h-32 bg-accent/20 rounded-full blur-3xl -z-10"></div>
         </div>

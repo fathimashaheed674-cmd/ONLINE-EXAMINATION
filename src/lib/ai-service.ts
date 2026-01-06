@@ -18,9 +18,9 @@ export async function generateQuestions(topic: string, count: number = 5): Promi
 
         if (!response.ok) throw new Error('Network response was not ok');
 
-        const questions = await response.json();
+        const questionsData = await response.json();
 
-        return questions.map((q: any, i: number) => ({
+        return questionsData.map((q: { text: string; options: string[]; correctAnswer: number; explanation: string }, i: number) => ({
             id: Date.now() + i,
             text: q.text,
             options: q.options,
@@ -63,7 +63,7 @@ export async function analyzePerformance(answers: Record<number, number>, questi
             weakAreas: analysis.weakAreas
         };
 
-    } catch (error) {
+    } catch (error: unknown) {
         console.error("Analysis failed:", error);
         return {
             score: 0,
