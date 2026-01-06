@@ -26,8 +26,11 @@ interface ExamResult {
     createdAt: any;
 }
 
-export default function ResultPage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = React.use(params);
+export default function ResultPage(props: {
+    params: Promise<{ id: string }>;
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+    const { id } = React.use(props.params);
     const { user } = useAuth();
     const router = useRouter();
     const [result, setResult] = useState<ExamResult | null>(null);

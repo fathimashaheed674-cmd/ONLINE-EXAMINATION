@@ -5,12 +5,11 @@ interface SearchParams {
     mode?: string;
 }
 
-export default async function AuthPage({
-    searchParams,
-}: {
+export default async function AuthPage(props: {
+    params: Promise<{ [key: string]: string | string[] | undefined }>;
     searchParams: Promise<SearchParams>;
 }) {
-    const { mode } = await searchParams;
+    const { mode } = await props.searchParams;
     const initialMode = mode === 'signup' ? 'signup' : 'login';
 
     return (
