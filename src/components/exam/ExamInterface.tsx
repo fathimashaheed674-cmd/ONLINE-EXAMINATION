@@ -13,7 +13,7 @@ export default function ExamInterface({ topic }: { topic: string }) {
     const [currentQIndex, setCurrentQIndex] = useState(0);
     const [answers, setAnswers] = useState<Record<number, number>>({});
     const [flagged, setFlagged] = useState<Set<number>>(new Set());
-    const [timeLeft, setTimeLeft] = useState(45 * 60);
+    const [timeLeft, setTimeLeft] = useState(60 * 60);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
 

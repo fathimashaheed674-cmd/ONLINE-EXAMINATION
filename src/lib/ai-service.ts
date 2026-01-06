@@ -8,7 +8,7 @@ export interface Question {
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
 
-export async function generateQuestions(topic: string, count: number = 5): Promise<Question[]> {
+export async function generateQuestions(topic: string, count: number = 20): Promise<Question[]> {
     try {
         const response = await fetch(`${BACKEND_URL}/api/generate`, {
             method: 'POST',

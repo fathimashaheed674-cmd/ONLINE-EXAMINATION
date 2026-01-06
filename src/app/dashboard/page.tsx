@@ -114,8 +114,8 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <ExamCard
                         title="C Basics & Syntax"
-                        duration="15 mins"
-                        questions={5}
+                        duration="30 mins"
+                        questions={20}
                         difficulty="Easy"
                         tags={['C', 'Programming']}
                         onStart={() => startExam('C Language Basics and Syntax')}
@@ -123,8 +123,8 @@ export default function DashboardPage() {
                     />
                     <ExamCard
                         title="Pointers & Memory"
-                        duration="30 mins"
-                        questions={5}
+                        duration="60 mins"
+                        questions={20}
                         difficulty="Hard"
                         tags={['C', 'Memory']}
                         onStart={() => startExam('C Pointers and Memory Management')}
@@ -132,8 +132,8 @@ export default function DashboardPage() {
                     />
                     <ExamCard
                         title="Data Structures in C"
-                        duration="45 mins"
-                        questions={5}
+                        duration="50 mins"
+                        questions={20}
                         difficulty="Medium"
                         tags={['C', 'DSA']}
                         onStart={() => startExam('Data Structures in C')}
