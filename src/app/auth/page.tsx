@@ -1,15 +1,9 @@
 import { Suspense } from 'react';
 import AuthForm from '@/components/auth/AuthForm';
 
-interface SearchParams {
-    mode?: string;
-}
-
-export default async function AuthPage(props: {
-    params: Promise<{ [key: string]: string | string[] | undefined }>;
-    searchParams: Promise<SearchParams>;
-}) {
-    const { mode } = await props.searchParams;
+export default async function AuthPage(props: any) {
+    const searchParams = await props.searchParams;
+    const { mode } = searchParams;
     const initialMode = mode === 'signup' ? 'signup' : 'login';
 
     return (

@@ -26,11 +26,8 @@ interface ExamResult {
     createdAt: any;
 }
 
-export default function ResultPage(props: {
-    params: Promise<{ id: string }>;
-    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
-    const { id } = React.use(props.params);
+export default function ResultPage(props: any) {
+    const { id } = React.use(props.params) as { id: string };
     const { user } = useAuth();
     const router = useRouter();
     const [result, setResult] = useState<ExamResult | null>(null);
@@ -80,7 +77,6 @@ export default function ResultPage(props: {
                 <ChevronLeft size={20} /> Back to Dashboard
             </Link>
 
-            {/* Header Summary */}
             <div className="glass-panel p-8 rounded-3xl mb-12 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-12 opacity-10">
                     <BarChart2 size={120} className="text-primary" />
@@ -116,9 +112,8 @@ export default function ResultPage(props: {
                     </div>
                 </div>
 
-                {/* AI Global Analysis */}
                 {(result.aiFeedback || result.weakAreas) && (
-                    <div className="mt-8 pt-8 border-t border-glass-border relative z-10 animate-fade-in-up">
+                    <div className="mt-8 pt-8 border-t border-glass-border relative z-10">
                         <div className="flex items-center gap-2 text-primary font-bold mb-3">
                             <BarChart2 size={18} /> AI Global Insights
                         </div>
@@ -143,7 +138,6 @@ export default function ResultPage(props: {
                 )}
             </div>
 
-            {/* Detailed Question Review */}
             <div className="space-y-8">
                 <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
                     <MessageSquare className="text-primary" /> Question Review
@@ -186,8 +180,6 @@ export default function ResultPage(props: {
                                         >
                                             <span className="inline-block w-6 font-mono text-xs opacity-50">{String.fromCharCode(65 + optIdx)}.</span>
                                             {option}
-                                            {isCorrectOpt && <span className="ml-2 text-[10px] uppercase tracking-wider">(Correct)</span>}
-                                            {isSelectedOpt && !isCorrectOpt && <span className="ml-2 text-[10px] uppercase tracking-wider">(Your Choice)</span>}
                                         </div>
                                     );
                                 })}
