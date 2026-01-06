@@ -48,11 +48,11 @@ export default function DashboardPage() {
     };
 
     return (
-        <div className="container py-12">
-            <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-6">
+        <div className="app-container py-12 md:py-20">
+            <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-8">
                 <div>
-                    <h1 className="text-4xl font-bold mb-2">Student Dashboard</h1>
-                    <p className="text-gray-400">Welcome back, <span className="text-white font-medium">{user?.displayName || user?.email?.split('@')[0] || 'User'}</span>! Ready to excel?</p>
+                    <h1 className="text-4xl md:text-5xl font-black mb-3">Student Dashboard</h1>
+                    <p className="text-gray-400 text-lg">Welcome back, <span className="text-primary font-bold">{user?.displayName || user?.email?.split('@')[0] || 'User'}</span>! Ready to excel?</p>
                 </div>
                 <div className="flex gap-4">
                     <Link href="/analytics" className="glass-btn px-6 py-2 rounded-lg text-sm font-medium flex items-center gap-2">

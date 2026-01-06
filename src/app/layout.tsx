@@ -21,9 +21,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <AuthProvider>
-          <div className="min-h-screen flex flex-col relative">
+          <div className="min-h-screen flex flex-col relative bg-[#050505]">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-64 bg-primary/10 blur-[120px] -z-10 pointer-events-none" />
             <Navbar />
-            <main className="flex-1 pt-20">
+            <main className="flex-1 pt-32 pb-20">
               {children}
             </main>
           </div>
